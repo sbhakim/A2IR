@@ -1,0 +1,29 @@
+# This file can be used to list pip-installed packages if needed,
+# but the Conda environment (environment.yml) is the primary way
+# to manage dependencies for this project.
+#
+# Example:
+# pandas>=1.3.0
+# numpy>=1.20.0
+# scikit-learn
+# torch
+# transformers
+# sentence-transformers
+# spacy
+# networkx
+# pyyaml
+# langgraph
+# langchain
+# pymisp
+# requests
+# python-dateutil
+# jsonlines
+# rouge-score
+# nltk
+# keybert
+# scipy
+# psutil
+# pynvml
+# clingo
+# shap
+

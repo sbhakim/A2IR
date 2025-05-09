@@ -1,0 +1,7 @@
+# A2IR Framework Logging Configuration
+logging:
+  level: "INFO"
+  log_file: "logs/a2ir_run.log"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  rotation: "10MB"
+

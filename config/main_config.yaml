@@ -1,0 +1,77 @@
+# A2IR Framework Main Configuration
+datasets:
+  lanl_logs:
+    path: "data/raw/lanl/"
+    preprocessing:
+      normalization: "wazuh"
+      deduplication: "pandas"
+      feature_extraction: "regex"
+      train_test_split: 0.8
+  cic_ids2017:
+    path: "data/raw/cic_ids2017/"
+    preprocessing:
+      processing: "zeek"
+      feature_engineering: "packet_rate, entropy, connection_states"
+      sampling: "stratified"
+      train_test_split: 0.7
+  cic_ddos2019:
+    path: "data/raw/cic_ddos2019/"
+    preprocessing:
+      processing: "zeek"
+      feature_engineering: "packet_rate, entropy, ip_distributions"
+      sampling: "stratified"
+      train_test_split: 0.7
+  cert_insider_threat:
+    path: "data/raw/cert_insider/"
+    preprocessing:
+      normalization: "pandas"
+      profiling: "30-day_baseline"
+      augmentation: "smote"
+      train_test_split: 0.8
+  splunk_attack_range:
+    path: "data/raw/splunk_attack/"
+    preprocessing:
+      labeling: "ground_truth"
+      standardization: "sklearn"
+      cross_validation: "5-fold"
+  misp_threat_intel:
+    path: "data/raw/misp/"
+    preprocessing:
+      filtering: "pymisp_conf>0.7"
+      verification: "manual"
+      mapping: "networkx"
+      weighting: "exponential_decay"
+models:
+  alert_classifier:
+    name: "bert-base-uncased"
+    path: "models/alert_classifier/"
+  neural_investigator:
+    name: "roberta-base"
+    path: "models/neural_investigator/"
+knowledge_graph:
+  type: "ftag"
+  storage_path: "models/knowledge_graph/a2ir_kg.db"
+agents:
+  triage_agent:
+    confidence_threshold: 0.7
+    model: "alert_classifier"
+  investigation_agent:
+    context_fields: ["sender_reputation", "url_analysis", "attachment_scan"]
+    max_iterations: 3
+  response_agent:
+    rules_path: "data/knowledge_base/response_rules.json"
+    isolation_priority: "high"
+trust_score:
+  alpha_weighting: 0.6
+evaluation:
+  metrics:
+    triage_accuracy: "f1_score"
+    response_time: "seconds"
+    shap_fidelity: "correlation"
+    trust_score: "weighted_combination"
+  target_values:
+    f1_score: 0.85
+    response_time_reduction: 0.6
+    shap_fidelity: 0.8
+    trust_score: 4.0
+

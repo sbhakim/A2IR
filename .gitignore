@@ -1,0 +1,128 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+!docs/.gitkeep
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# PyCharm
+.idea/
+*.iml
+*.DS_Store
+
+# Conda
+# To uncomment these lines, delete the leading # character.
+# .condarc
+# envs/
+# .conda_envs.txt
+# .conda_pkgs_dir.txt
+
+# Virtualenv
+venv/
+.env
+.venv
+env/
+ENV/
+env.bak/
+ENV.bak/
+
+# Data files (consider adding large raw/processed data files if not versioning them)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/knowledge_base/.gitkeep
+
+# Model files (if large and not versioned)
+models/*.pt
+models/*.bin
+!models/.gitkeep
+
+# Logs
+logs/*.log
+logs/feedback/
+
+# Conda environment file (if you export it)
+# environment.yml
+# environment.yaml
+
+# Secrets and sensitive information
+*.env
+secrets.yaml
+*.pem
+*.key
+
