@@ -1,77 +1,166 @@
 # A2IR Framework Main Configuration
+
+# Defines base paths for data, models, and logs.
+# Useful for making the configuration more portable if these top-level directories change.
+paths:
+  data_dir: "data" # Base for raw, processed, test, knowledge_base, results, evaluation
+  models_dir: "models" # Base for alert_classifier, neural_investigator, knowledge_graph
+  logs_dir: "logs" # Base for log files
+
 datasets:
   lanl_logs:
-    path: "data/raw/lanl/"
+    path: "data/raw/lanl/" # Assuming this is relative to data_dir or project root
     preprocessing:
       normalization: "wazuh"
       deduplication: "pandas"
       feature_extraction: "regex"
       train_test_split: 0.8
   cic_ids2017:
-    path: "data/raw/cic_ids2017/"
+    # UPDATED PATH to your specific CIC-IDS2017 CSVs directory
+    path: "/media/safayat/second_ssd/A2IR/data/raw/cic_ids2017/MachineLearningCVE/"
     preprocessing:
-      processing: "zeek"
-      feature_engineering: "packet_rate, entropy, connection_states"
-      sampling: "stratified"
-      train_test_split: 0.7
+      # These are notes from your PDF; actual implementation is in CICIDSPreprocessor
+      processing: "cicflowmeter_csv" # Changed from zeek to reflect CSV source
+      feature_engineering: "packet_rate, entropy, connection_states" # For documentation
+      sampling: "stratified" # For documentation / future implementation
+      train_test_split: 0.7 # For documentation / future implementation
   cic_ddos2019:
-    path: "data/raw/cic_ddos2019/"
+    path: "data/raw/cic_ddos2019/" # Example path, update if you use this dataset
     preprocessing:
       processing: "zeek"
       feature_engineering: "packet_rate, entropy, ip_distributions"
       sampling: "stratified"
       train_test_split: 0.7
   cert_insider_threat:
-    path: "data/raw/cert_insider/"
+    path: "data/raw/cert_insider/" # Example path, update if you use this dataset
     preprocessing:
       normalization: "pandas"
       profiling: "30-day_baseline"
       augmentation: "smote"
       train_test_split: 0.8
   splunk_attack_range:
-    path: "data/raw/splunk_attack/"
+    path: "data/raw/splunk_attack/" # Example path, update if you use this dataset
     preprocessing:
       labeling: "ground_truth"
       standardization: "sklearn"
       cross_validation: "5-fold"
   misp_threat_intel:
-    path: "data/raw/misp/"
+    path: "data/raw/misp/" # Example path, update if you use this dataset
     preprocessing:
       filtering: "pymisp_conf>0.7"
       verification: "manual"
       mapping: "networkx"
       weighting: "exponential_decay"
+
 models:
   alert_classifier:
-    name: "bert-base-uncased"
-    path: "models/alert_classifier/"
+    # Name is more for documentation; path is key.
+    # If you switch to a numerical model for CIC-IDS2017, you might change 'name' too.
+    name: "random_forest_network" # Changed from bert-base-uncased as we're using RF now
+    path: "models/alert_classifier/" # Directory where model.pkl and metadata.json are saved/loaded
+    model_type: "random_forest" # Ensure this matches your classifier.py
+    # RandomForest specific params (can be overridden by trainer's hyperparam search)
+    rf_n_estimators: 100
+    rf_max_depth: 20
+    rf_class_weight: "balanced" # Good for imbalanced datasets like CIC-IDS2017
+    # TF-IDF params (less relevant if CIC-IDS2017 features are purely numeric)
+    tfidf_max_features: 5000
+    tfidf_ngram_range: [1, 1]
+
+
   neural_investigator:
-    name: "roberta-base"
-    path: "models/neural_investigator/"
+    name: "simulated_investigator" # Changed from roberta-base as current is simulated
+    path: "models/neural_investigator/" # If it were to save/load anything
+    # API keys (leave blank or use dummy values if not using real APIs yet)
+    virustotal_api_key: ""
+    shodan_api_key: ""
+    abuseipdb_api_key: ""
+    cache_ttl: 3600 # Cache API results for 1 hour
+
 knowledge_graph:
   type: "ftag"
-  storage_path: "models/knowledge_graph/a2ir_kg.db"
+  name: "A2IR_ICS_Knowledge_Base" # Name for the graph if using ICS MITRE data
+  # Path where the FTAG JSON file will be saved and loaded from.
+  storage_path: "models/knowledge_graph/a2ir_ics_kg.json"
+  # UPDATED PATH to your downloaded MITRE ATT&CK (ICS) STIX bundle.
+  mitre_data_path: "/media/safayat/second_ssd/A2IR/data/raw/mitre/ics-attack/ics-attack.json"
+  # Configuration for FTAG construction (e.g., pruning thresholds) can go here
+  # pruning_threshold: 0.2 # Example
+
+# Configuration for the symbolic reasoning engine
+reasoning:
+  # Path to the directory containing .lp rule files, or to a primary .lp file.
+  # ASPReasoner._load_rule_sets will look for specific files (core_rules.lp, ddos_rules.lp, etc.)
+  # in the directory of this path.
+  rules_path: "data/knowledge_base/core_rules.lp" # Or just "data/knowledge_base/"
+  clingo_path: "clingo" # Assumes clingo is in system PATH
+  timeout: 30 # ASP solver timeout in seconds
+  confidence_threshold: 0.5 # Minimum confidence for a neural output to be considered a strong fact
+
+# Configuration for the training process (used by AlertClassifierTrainer)
+training:
+  # Path to the JSON file containing processed alerts for training.
+  # This should be the output of the "preprocess_data" mode for your target training dataset.
+  # For CIC-IDS2017, it would typically be: "data/processed/cic_ids2017/cic_ids2017_processed_alerts.json"
+  training_data_path: "data/processed/cic_ids2017/cic_ids2017_processed_alerts.json"
+  batch_size: 32 # For future deep learning models
+  epochs: 10     # For future deep learning models
+  validation_split: 0.2
+  cv_folds: 5
+  do_hyperparam_search: false # Set to true to enable
+  # param_grid: # Example for RandomForest, adjust as needed for your model type
+  #   rf_n_estimators: [50, 100, 150]
+  #   rf_max_depth: [10, 20, null]
+
+# Configuration for the incident response workflow and agents
 agents:
-  triage_agent:
-    confidence_threshold: 0.7
-    model: "alert_classifier"
-  investigation_agent:
-    context_fields: ["sender_reputation", "url_analysis", "attachment_scan"]
-    max_iterations: 3
-  response_agent:
-    rules_path: "data/knowledge_base/response_rules.json"
+  triage_agent: # This is conceptual; logic is within IncidentWorkflow using AlertClassifier
+    confidence_threshold: 0.7 # Threshold for classifier output to be considered high confidence
+    model: "alert_classifier" # Reference to the model config above
+  investigation_agent: # Conceptual; logic within NeurosymbolicIntegration using NeuralInvestigator
+    # enable_investigation: true # This is now in 'integration' config
+    max_investigation_rounds: 2
+    # context_fields: ["sender_reputation", "url_analysis", "attachment_scan"] # Example
+  response_agent: # Conceptual; driven by ASPReasoner's output actions
+    # rules_path: "data/knowledge_base/response_rules.json" # This is more for defining actual response playbooks
     isolation_priority: "high"
+
+# Configuration for the neurosymbolic integration layer
+integration:
+  confidence_threshold: 0.6 # General confidence threshold for decision making within integration
+  max_investigation_rounds: 2 # Matches agent config for consistency
+  enable_investigation: true # Master switch for enabling NeuralInvestigator calls
+  debug_mode: false # Set to true for more verbose tracing in NeurosymbolicIntegration
+
+# Configuration for the explanation framework
+explanation:
+  max_iterations: 5 # For dialectical process (if it becomes iterative)
+  verbosity_level: "medium" # 'low', 'medium', 'high'
+
+# Configuration for the trust score framework
 trust_score:
-  alpha_weighting: 0.6
+  alpha_weighting: 0.6 # As per your PhD proposal TS(e,c) = α * HR(e) + (1 - α) * SF(e,c)
+
+# Configuration for framework evaluation
 evaluation:
-  metrics:
+  # Default path for test data if not specified via command line
+  test_data_path: "data/test/cic_ids2017_evaluation_sample.json" # Create a sample for testing
+  # Default path for ground truth if not specified via command line
+  ground_truth_path: "data/test/cic_ids2017_ground_truth_sample.json" # Corresponding ground truth
+  output_dir: "data/evaluation" # Base directory for reports, plots
+  generate_plots: true # Can be overridden by --generate-plots arg
+  metrics: # For documentation, actual calculation is in MetricsCalculator
     triage_accuracy: "f1_score"
     response_time: "seconds"
-    shap_fidelity: "correlation"
+    shap_fidelity: "correlation" # Placeholder, actual SHAP fidelity needs specific implementation
     trust_score: "weighted_combination"
-  target_values:
+  target_values: # As per your PhD proposal Table 4.3
     f1_score: 0.85
-    response_time_reduction: 0.6
+    response_time_reduction: 0.6 # Compared to a manual baseline (e.g., 5 mins)
     shap_fidelity: 0.8
     trust_score: 4.0
 
+# Configuration for incident response simulation runs (if not evaluating)
+incident_response:
+  # Default file to process if --incident-id is not given in "run_incident_response" mode
+  test_incidents_path: "data/test/sample_incidents_cic.json" # Create some sample processed alerts
